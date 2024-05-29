@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+  "./demo_contract",
+  "./limit-order-predicate",
+]
+
+[workspace.dependencies]
+fuels = "0.62.0"
+tokio = "1.12"

@@ -3,7 +3,7 @@ name = "core"
 source = "path+from-root-D440FD152F45608B"
 
 [[package]]
-name = "limit_order_predicate"
+name = "demo_contract"
 source = "member"
 dependencies = ["std"]
 

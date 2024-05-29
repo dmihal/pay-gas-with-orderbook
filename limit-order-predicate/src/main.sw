@@ -25,7 +25,7 @@ configurable {
 const SCALE: u256 = 0x3b9aca00u256; // 1000000000u256;
 
 fn main(input_offer_coins: Vec<u64>, sold_output_coins: Vec<u64>, output_returned_offer_coins: Vec<u64>) -> bool {
-    let predicate_address = predicate_address();
+    let predicate_addr = predicate_address();
     let current_input_idx = current_input();
 
     let mut buy_amount = 0;
@@ -39,7 +39,7 @@ fn main(input_offer_coins: Vec<u64>, sold_output_coins: Vec<u64>, output_returne
         if input_asset_id(coin_idx).unwrap() != OFFER_ASSET {
             return false;
         }
-        if input_coin_owner(coin_idx).unwrap() != predicate_address {
+        if input_coin_owner(coin_idx).unwrap() != predicate_addr {
             return false;
         }
         if coin_idx == current_input_idx {
@@ -63,7 +63,7 @@ fn main(input_offer_coins: Vec<u64>, sold_output_coins: Vec<u64>, output_returne
         if output_asset_id(coin_idx).unwrap() != OFFER_ASSET {
             return false;
         }
-        if output_asset_to(coin_idx).unwrap() != predicate_address.bits() {
+        if output_asset_to(coin_idx).unwrap() != predicate_addr {
             return false;
         }
 
@@ -79,7 +79,7 @@ fn main(input_offer_coins: Vec<u64>, sold_output_coins: Vec<u64>, output_returne
         if output_asset_id(coin_idx).unwrap() != RECEIVE_ASSET {
             return false;
         }
-        if output_asset_to(coin_idx).unwrap() != OWNER.bits() {
+        if output_asset_to(coin_idx).unwrap() != OWNER {
             return false;
         }
 

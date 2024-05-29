@@ -11,7 +11,7 @@ use fuels::{
 
 abigen!(Predicate(
     name = "LimitOrderPredicate",
-    abi = "out/debug/limit_order_predicate-abi.json"
+    abi = "limit-order-predicate/out/debug/limit_order_predicate-abi.json"
 ));
 
 pub const ETH_ASSET: AssetId = AssetId::new([0u8; 32]);
