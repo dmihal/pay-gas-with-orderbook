@@ -1,0 +1,13 @@
+[[package]]
+name = "core"
+source = "path+from-root-93B310ED66A2D489"
+
+[[package]]
+name = "limit_order_predicate"
+source = "member"
+dependencies = ["std"]
+
+[[package]]
+name = "std"
+source = "git+https://github.com/fuellabs/sway?rev#3c86abb4008017cfb93132c759758cd7a02fc8d9"
+dependencies = ["core"]
