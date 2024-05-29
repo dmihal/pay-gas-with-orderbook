@@ -36,12 +36,12 @@ fn main(input_offer_coins: Vec<u64>, sold_output_coins: Vec<u64>, output_returne
     while i < input_offer_coins.len() {
         let coin_idx = input_offer_coins.get(i).unwrap();
 
-        // if input_asset_id(coin_idx).unwrap() != OFFER_ASSET {
-        //     return false;
-        // }
-        // if input_coin_owner(coin_idx).unwrap() != predicate_address {
-        //     return false;
-        // }
+        if input_asset_id(coin_idx).unwrap() != OFFER_ASSET {
+            return false;
+        }
+        if input_coin_owner(coin_idx).unwrap() != predicate_address {
+            return false;
+        }
         if coin_idx == current_input_idx {
             current_input_validated = true;
         }
@@ -60,12 +60,12 @@ fn main(input_offer_coins: Vec<u64>, sold_output_coins: Vec<u64>, output_returne
     while i < output_returned_offer_coins.len() {
         let coin_idx = output_returned_offer_coins.get(i).unwrap();
 
-    //     if output_asset_id(coin_idx).unwrap() != OFFER_ASSET {
-    //         return true;
-    //     }
-    //     if output_asset_to(coin_idx).unwrap() != predicate_address.bits() {
-    //         return true;
-    //     }
+        if output_asset_id(coin_idx).unwrap() != OFFER_ASSET {
+            return false;
+        }
+        if output_asset_to(coin_idx).unwrap() != predicate_address.bits() {
+            return false;
+        }
 
         buy_amount -= output_amount(coin_idx);
 
@@ -76,12 +76,12 @@ fn main(input_offer_coins: Vec<u64>, sold_output_coins: Vec<u64>, output_returne
     while i < sold_output_coins.len() {
         let coin_idx = sold_output_coins.get(i).unwrap();
 
-    //     if output_asset_id(coin_idx).unwrap() != RECEIVE_ASSET {
-    //         return true;
-    //     }
-    //     if output_asset_to(coin_idx).unwrap() != OWNER.bits() {
-    //         return true;
-    //     }
+        if output_asset_id(coin_idx).unwrap() != RECEIVE_ASSET {
+            return false;
+        }
+        if output_asset_to(coin_idx).unwrap() != OWNER.bits() {
+            return false;
+        }
 
         sell_amount += output_amount(coin_idx);
         i += 1;

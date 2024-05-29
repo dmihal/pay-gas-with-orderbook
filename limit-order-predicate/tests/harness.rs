@@ -1,92 +1,14 @@
-use fuels::{prelude::*, types::ContractId};
+mod lib;
+
 use fuels::{
-    accounts::{
-        predicate::Predicate,
-        wallet::{WalletUnlocked, Wallet},
-    },
-    core::{
-        codec::EncoderConfig,
-        traits::{Tokenizable, Parameterize},
-    },
     prelude::*,
-    programs::{
-        call_response::FuelCallResponse,
-        contract::ContractCallHandler,
-    },
     types::{
-        errors,
+        errors::Error,
         errors::transaction::Reason,
-        Bytes32,
-        Identity,
         output::Output,
     },
-    tx::{ContractIdExt, TxParameters},
 };
-
-// Load abi from json
-abigen!(Predicate(
-    name = "LimitOrderPredicate",
-    abi = "out/debug/limit_order_predicate-abi.json"
-));
-
-pub const ETH_ASSET: AssetId = AssetId::new([0u8; 32]);
-pub const USDC_ASSET: AssetId = AssetId::new([1u8; 32]);
-
-
-pub async fn get_wallets() -> Vec<WalletUnlocked> {
-    let num_wallets = 3;
-    let initial_amount = 10_000_000_000_000_000;
-
-    let asset_ids = [
-        ETH_ASSET,
-        USDC_ASSET,
-    ];
-    let asset_configs = asset_ids
-        .map(|id| AssetConfig {
-            id,
-            num_coins: 1,
-            coin_amount: initial_amount,
-        })
-        .into();
-
-    let wallets_config = WalletsConfig::new_multiple_assets(num_wallets, asset_configs);
-
-    let wallets = launch_custom_provider_and_get_wallets(wallets_config, None, None).await.unwrap();
-
-    wallets
-}
-
-pub fn get_order_predicate<T: Account>(
-    owner: &T,
-    offer_asset: AssetId,
-    receive_asset: AssetId,
-    price_numerator: u64,
-    price_denominator: u64,
-    provider: &Provider,
-) -> Predicate {
-    let price = price_numerator * 1000000000 / price_denominator;
-    let configurables = LimitOrderPredicateConfigurables::new(EncoderConfig::default())
-        .with_PRICE(price.into()).unwrap();
-        // .with_OFFER_ASSET(offer_asset)
-        // .with_RECEIVE_ASSET(receive_asset)
-        // .with_OWNER(owner.address().into());
-
-    let predicate_data = LimitOrderPredicateEncoder::encode_data(
-        &LimitOrderPredicateEncoder::default(),
-        vec![],
-        vec![],
-        vec![],
-    ).unwrap();
-
-    let mut predicate: Predicate =
-        Predicate::load_from("./out/debug/limit_order_predicate.bin")
-            .unwrap()
-            .with_data(predicate_data)
-            .with_configurables(configurables);
-    predicate.set_provider(provider.clone());
-
-    predicate
-}
+use lib::{ETH_ASSET, USDC_ASSET, get_predicate_data, get_wallets, get_order_predicate};
 
 #[tokio::test]
 async fn can_swap() {
@@ -120,12 +42,11 @@ async fn can_swap() {
     let send_amount = 100;
     let receive_amount = 50;
 
-    let predicate_data = LimitOrderPredicateEncoder::encode_data(
-        &LimitOrderPredicateEncoder::default(),
+    let predicate_data = get_predicate_data(
         vec![0], // ETH input is idx 0
         vec![2], // USDC output is idx 2
         vec![3], // ETH returned output is idx 3
-    ).unwrap();
+    );
     let predicate = predicate.with_data(predicate_data);
     
     let eth_inputs = predicate
@@ -175,7 +96,7 @@ async fn can_swap() {
         TxPolicies::default().with_max_fee(10_000).with_script_gas_limit(0),
     );
 
-    transaction_builder.add_signer(buyer.clone());
+    let _ = transaction_builder.add_signer(buyer.clone());
 
     let script_transaction = transaction_builder.build(&provider).await.unwrap();
 
@@ -217,12 +138,11 @@ async fn cant_swap_excessive_output() {
     let send_amount = 100;
     let receive_amount = 51;
 
-    let predicate_data = LimitOrderPredicateEncoder::encode_data(
-        &LimitOrderPredicateEncoder::default(),
+    let predicate_data = get_predicate_data(
         vec![0], // ETH input is idx 0
         vec![2], // USDC output is idx 2
         vec![3], // ETH returned output is idx 3
-    ).unwrap();
+    );
     let predicate = predicate.with_data(predicate_data);
     
     let eth_inputs = predicate
@@ -272,7 +192,7 @@ async fn cant_swap_excessive_output() {
         TxPolicies::default().with_max_fee(10_000).with_script_gas_limit(0),
     );
 
-    transaction_builder.add_signer(buyer.clone());
+    let _ = transaction_builder.add_signer(buyer.clone());
 
     let script_transaction = transaction_builder.build(&provider).await.unwrap();
 
@@ -282,7 +202,7 @@ async fn cant_swap_excessive_output() {
         .err()
         .expect("Transaction should fail");
 
-    if let errors::Error::Transaction(ref reason) = err {
+    if let Error::Transaction(ref reason) = err {
         if let Reason::Validation(reason_str) = reason {
             assert_eq!(reason_str, "PredicateVerificationFailed(Panic(PredicateReturnedNonOne))");
         } else {
